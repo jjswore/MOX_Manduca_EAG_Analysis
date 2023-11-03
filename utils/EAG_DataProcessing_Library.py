@@ -113,7 +113,7 @@ def get_EAGs(data):
         channels_data[ch] = baseline_subtracted_data
     return channels_data
 
-def Extract_mEAG(FILE, record_channels=['EAG2'], lc=.1, hc=4, order=1, BF=True):
+def Extract_mEAG(FILE, record_channels=['EAG2']):
     # first we load the data into our variable abf
     # open a csv file containing a EAG wave
     #with open(FILE, newline='') as f:
@@ -144,28 +144,6 @@ def Extract_mEAG(FILE, record_channels=['EAG2'], lc=.1, hc=4, order=1, BF=True):
         EAGs_dict[key] = intervals
         #print(EAGs_dict[key])
 
-    #Apply the butterworth filter to the values of the dictionary
-    if BF == True:
-        for key, value in EAGs_dict.items():
-            if key not in record_channels:
-                continue
-            filtered_data = []
-            TEMP = EAGs_dict[key]
-
-            for i in range(3):
-                fdata = butter_bandpass_filter(TEMP[i], lowcut=lc, highcut=hc, fs=100.0, order=order)
-
-                # Find the index of the peak (maximum absolute value)
-                #print(f'this is the filtered data {fdata}')
-                peak_index = np.argmax(np.abs(fdata))
-                # If the peak is negative, invert the sign of all values in this trial
-                if fdata[peak_index] < 0:
-
-                    fdata = [-v for v in fdata]
-
-                filtered_data.append(fdata)
-
-            EAGs_dict[key] = filtered_data
     filtered_dict = {key: value for key, value in EAGs_dict.items() if key in record_channels}
     return filtered_dict
 
@@ -248,7 +226,7 @@ def process_data(DL=[], record_channels=['EAG1','EAG2','EAG3','EAG4'], savedir=N
 
     SAVEDIR = savedir
     DList=[(subdir +'/') for directory in DL for subdir in get_subdirectories(directory)]
-    Normalize = Norm
+
     print(f'this is the DLIST: {DList}')
     for D in DList:
         print('beginning ', D)
@@ -263,9 +241,6 @@ def process_data(DL=[], record_channels=['EAG1','EAG2','EAG3','EAG4'], savedir=N
 
         # Extract the each individual wave and subtract the miniral oil control
         for data in exp:
-
-            control = findCTRL(data, ctrl)
-            RefWave = findCTRL(data, YY)
             # print(data,control)
             n = os.path.basename(data)
             print(n, 'is an experiment')
@@ -278,8 +253,6 @@ def process_data(DL=[], record_channels=['EAG1','EAG2','EAG3','EAG4'], savedir=N
             DIR = f'{SAVEDIR}{delivery}/{VOC}/'
             n = namer(data)
             Odor = Extract_mEAG(data,record_channels, Butter[0], Butter[1], BF=B_filt)
-            CTRL = Extract_mEAG(control,record_channels, Butter[0], Butter[1],BF=B_filt)
-            RW = Extract_mEAG(RefWave,record_channels, Butter[0], Butter[1],BF=B_filt)
 
             for x in range(0, 3):
                 # subtract the control
