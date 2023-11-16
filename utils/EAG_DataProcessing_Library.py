@@ -64,7 +64,7 @@ def find_sol(data):
     # Return the list of tuples
     return sol
 #fjkdikk
-def Extract_Waves(CSV):
+def Extract_Waves(CSV, SAVEDIR):
     BASENAME = os.path.basename(CSV)
     DF = Read_CSV_With_Col_Names(CSV)
     solenoid = DF['Solenoid']
@@ -85,14 +85,14 @@ def Extract_Waves(CSV):
         WAVES_DF['Solenoid'] = solenoid[sol[i][0] - 5: sol[i][0] + 40].values
 
         #create a save location
-        OUTPATH_DIR = os.path.join(RAW_DATA_OUTPATH, 'Extracted_Waves/')
+        OUTPATH_DIR = os.path.join(SAVEDIR, 'Extracted_Waves/')
         os.makedirs(OUTPATH_DIR, exist_ok=True)
 
         #make a file name
-        if '_1.csv' in BASENAME:
-            OUTFILE_NAME = BASENAME.replace('_1.csv', '')
-            OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
-            print(OUTFILE_NAME)
+        OUTFILE_NAME = BASENAME.replace('.csv','')
+        OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
+        print(OUTFILE_NAME)
+
         #save every extracted wave from the original file as its own CSV
         WAVES_DF.to_csv(OUTPATH_DIR+OUTFILE_NAME)
 

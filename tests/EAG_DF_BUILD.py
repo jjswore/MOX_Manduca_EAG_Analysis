@@ -55,8 +55,7 @@ def EAG_df_build(DIR):
 
     return master_df
 
-DIR = '/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/' \
-      'MOX_Manduca_EAG_Analysis/Data/Raw/Extracted_Waves/'
+DIR = '/Data/Extracted_Waves/'
 
 DF = EAG_df_build(DIR)
 
