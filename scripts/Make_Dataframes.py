@@ -1,9 +1,13 @@
 from utils.EAG_DataProcessing_Library import *
+DATA_DIR='/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/' \
+         'MOX_Manduca_EAG_Analysis/Data/Extracted_Waves/'
 
-df = EAG_DF_BUILD()
-save =
+SAVE_DIR = '/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/' \
+           'MOX_Manduca_EAG_Analysis/Data/DataFrames/'
 
-if not os.path.exists(save):
-    os.makedirs(save)
+df = EAG_DF_BUILD(DATA_DIR)
 
-df.to_csv(f'{save}All_Odors.csv')
+if not os.path.exists(SAVE_DIR):
+    os.makedirs(SAVE_DIR)
+
+df.to_csv(f'{SAVE_DIR}All.csv')
