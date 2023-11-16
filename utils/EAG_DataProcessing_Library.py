@@ -65,7 +65,7 @@ def find_sol(data):
     return sol
 
 
-def Extract_Waves(CSV, RAW_DATA_OUTPATH):
+def Extract_Waves(CSV):
     BASENAME = os.path.basename(CSV)
     DF = Read_CSV_With_Col_Names(CSV)
     solenoid = DF['Solenoid']
@@ -95,7 +95,7 @@ def Extract_Waves(CSV, RAW_DATA_OUTPATH):
             OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
             print(OUTFILE_NAME)
         #save every extracted wave from the original file as its own CSV
-        WAVES_DF.to_csv(OUTFILE_NAME)
+        WAVES_DF.to_csv(OUTPATH_DIR+OUTFILE_NAME)
 
 
 def name_con(f):

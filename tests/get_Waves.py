@@ -38,6 +38,6 @@ def Extract_Waves(CSV):
             OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
             print(OUTFILE_NAME)
         #save every extracted wave from the original file as its own CSV
-        WAVES_DF.to_csv(OUTFILE_NAME)
+        WAVES_DF.to_csv(OUTPATH_DIR+OUTFILE_NAME)
 
 Extract_Waves(TEST_CSV)
