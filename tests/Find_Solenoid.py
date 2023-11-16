@@ -52,8 +52,3 @@ def find_sol(data):
 
     # Return the list of tuples
     return sol
-
-df = Read_CSV_With_Col_Names(TEST_CSV)
-sol = find_sol(df['Solenoid'])
-plt.plot(sol)
-plt.show()

@@ -64,39 +64,39 @@ def find_sol(data):
     # Return the list of tuples
     return sol
 
-def Extract_mEAG(FILE, record_channels=['EAG2']):
-    # first we load the data into our variable abf
-    # open a csv file containing a EAG wave
-    #with open(FILE, newline='') as f:
-    with open(FILE, newline='') as f:
-        reader = csv.reader(f)
-        data = list(reader)
-    EAGs_dict = get_EAGs(data)
-    solenoid = EAGs_dict['Solenoid']
-    #the stimulus data is stored in "solenoid". we need to identify when it is activated/inactivated
+
+def Extract_Waves(CSV, SAVE=True):
+    BASENAME = os.path.basename(CSV)
+    DF = Read_CSV_With_Col_Names(CSV)
+    solenoid = DF['Solenoid']
+
+    # the stimulus data is stored in "solenoid".
+    # we need to identify when it is activated/inactivated
     sol = find_sol(solenoid)
     ni = len(sol)
 
-    # extract a 4 second window centered on the solenoid for each wave (this means three waves per channel
-    # Each key in the dictionary is either the time 't', or a channel 'EAG1', 'EAG4','EAG3','EAG2','Solenoid'
-    # the values for each channel with be three lists 5 seconds in length (400 points)
+    # store the channel to be processed in the variable temp
+    TEMP = DF['Voltage']
+    for i in range(0, ni):
+        WAVES_DF = pd.DataFrame()
 
-    for key, value in EAGs_dict.items():
-        if key not in record_channels:
-            continue
-        #print(key)
-        intervals = []
-        # store the channel to be processed in the variable temp
-        TEMP = EAGs_dict[key]
-        for i in range(0, ni):
-            interval = TEMP[sol[i][0] - 50: sol[i][1] + 400]
+        # extract half second prior to solenoid and 4 seconds after
+        # store in the the data frame
+        WAVES_DF['Voltage'] = TEMP[sol[i][0] - 5: sol[i][1] + 40].values
+        WAVES_DF['Solenoid'] = solenoid[sol[i][0] - 5: sol[i][1] + 40].values
 
-            intervals.append(interval)
-        EAGs_dict[key] = intervals
-        #print(EAGs_dict[key])
+        # create a save location
+        OUTPATH_DIR = os.path.join(RAW_DATA_OUTPATH, 'Extracted_Waves/')
+        os.makedirs(OUTPATH_DIR, exist_ok=True)
 
-    filtered_dict = {key: value for key, value in EAGs_dict.items() if key in record_channels}
-    return filtered_dict
+        # make a file name
+        if '_1.csv' in BASENAME:
+            OUTFILE_NAME = BASENAME.replace('_1.csv', '')
+            OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
+            print(OUTFILE_NAME)
+        # save every extracted wave from the original file as its own CSV
+        WAVES_DF.to_csv(f'{OUTPATH_DIR}{BASENAME}wave_{i}.csv')
+
 
 def name_con(f):
     # This will splits the basename of the file on "_" to find the concentration in the file name
@@ -160,70 +160,4 @@ def get_subdirectories(directory):
             subdirectories.append(path)
     return subdirectories
 
-def process_data(DL=[], record_channels=['EAG1','EAG2','EAG3','EAG4'], savedir=None, RETURN='Save'):
-    """
-        Process data from DList and save the processed data to savedir.
 
-        Parameters:
-        DList (list): A list of directories containing the data to process.
-        norm (str): Normalization method to use. Possible values: 'YY', 'Yes', False. Default is 'YY'. This normalizes
-                    data to the strongest odorant ylangylang.
-        sub (bool): Whether to subtract channel 1 from channel 2. Default is False.
-        savedir (str): Directory to save processed data to. Default is ''.
-
-        Returns: None
-        """
-    print('Starting Data_Processing')
-
-    SAVEDIR = savedir
-    DList=[(subdir +'/') for directory in DL for subdir in get_subdirectories(directory)]
-
-    print(f'this is the DLIST: {DList}')
-    for D in DList:
-        print('beginning ', D)
-        f1 = [f.path for f in os.scandir(D)
-              if 'DS_Store' not in os.path.basename(f)]
-        # seperate the data into experimental and control lists
-        ctrl = [x for x in f1 if 'mineraloil' in os.path.basename(x.lower()) or 'compressedair' in os.path.basename(x.lower())]
-        print(f'this is the control{ctrl}')
-        exp = [x for x in f1 if 'mineraloil' not in os.path.basename(x.lower()) or 'compressedair' not in os.path.basename(x.lower())]
-        YY = [x for x in f1 if 'ylangylang' in os.path.basename(x.lower())]
-
-
-        # Extract the each individual wave and subtract the miniral oil control
-        for data in exp:
-            # print(data,control)
-            n = os.path.basename(data)
-            print(n, 'is an experiment')
-            VOC = n.split("_")[4]
-            if n.split("_")[2] == 's':
-                delivery = 'Syringe'
-            elif n.split("_")[2] == 'p':
-                delivery = 'Pipette'
-            #create the directory where waves will be saved
-            DIR = f'{SAVEDIR}{delivery}/{VOC}/'
-            n = namer(data)
-            Odor = Extract_mEAG(data,record_channels, Butter[0], Butter[1], BF=B_filt)
-
-            for x in range(0, 3):
-                # subtract the control
-
-                for key in Odor.keys():
-                    Odor[key][x] = [a - b for a, b in zip(Odor[key][x], [np.mean(values) for values in zip(*[wave[:500] for wave in CTRL[key]])])]
-
-            if RETURN == 'SAVE':
-                SaveData(Odor, directory=DIR, name=n)
-
-
-            elif RETURN == 'PLOT':
-                for key in Odor.keys():
-                    for w in range(3):
-                        i = input('do you want to plot')
-                        if i.lower() == 'yes':
-                            plt.plot(Odor[key][w])
-                            plt.title(f'{VOC}{key} wave{w}')
-                            plt.ylim(-1.5,1.5)
-                            plt.show()
-                        else:
-                            break
-            print('finished')
