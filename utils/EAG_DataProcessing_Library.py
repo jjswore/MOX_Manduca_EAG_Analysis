@@ -63,8 +63,7 @@ def find_sol(data):
 
     # Return the list of tuples
     return sol
-
-
+#fjkdikk
 def Extract_Waves(CSV):
     BASENAME = os.path.basename(CSV)
     DF = Read_CSV_With_Col_Names(CSV)
@@ -97,66 +96,65 @@ def Extract_Waves(CSV):
         #save every extracted wave from the original file as its own CSV
         WAVES_DF.to_csv(OUTPATH_DIR+OUTFILE_NAME)
 
-def name_con(f):
-    # This will splits the basename of the file on "_" to find the concentration in the file name
-    #'dateMoth#SexAntenna#_line_deliverymethod_odor_trial' 062623M1fA1_OR6KO_p_linalool_1
-    tn = os.path.basename(f).split("_", 3)
-    name = f'{tn[0]}{tn[3]}'
-    return name
+def EAG_DF_BUILD(DIR):
 
-def SaveData(data, directory, name):  # data is an numpy array
-    # saves nested array of multichannel data to a
+    F_List = os.listdir(DIR)
 
-    Dir = directory
-    if not os.path.isdir(Dir):
-        os.makedirs(Dir)
-
-    for key in data:
-        for wave_idx, wave_data in enumerate(data[key]):
-            with open(f'{Dir}/{name}_{key}_wave{wave_idx}.csv', 'w', newline='') as f:
-                write = csv.writer(f)
-                write.writerow(wave_data)
+    #create lists to store meta data for each file
+    master = []
+    NAME_L = []
+    LABEL_L = []
+    CONCENTRATION_L = []
+    DATE_L = []
+    TRIAL_L = []
+    WAVE_L = []
 
 
-def namer(f):
-    #removes the "." from the file name
-    n = os.path.basename(f)
-    tn = n.split(".")
 
-    return tn[0]
+    for file in F_List:
+        print(file)
+        # seperate the metadata into individual strings
+        n = os.path.basename(file.lower()).split("_")
+        n[4] = n[4].replace('.csv', '')
+        name = n[0] + n[1] + n[2] + n[3] + n[4]
 
-def open_wave(FILE):
-    #open a csv file containing a EAG wave
-    with open(FILE, newline='') as f:
-        reader = csv.reader(f)
-        data = list(reader)
-    f.close()
-    l = data[0]
-    l = list(map(float, l))
-    return l
+        #extract the metadata
+        date = n[0]
+        concentration = n[1]
+        label = n[2]
+        trial = n[3]
+        wave_number = n[4]
 
-def csv_plot(FILE, NAME, SDir, SAVE=True):
-    #plot a csv file
-    t = open_wave(FILE)
-    # n=NAME.split("\\")
-    plt.title(label=NAME, size=10)
-    plt.plot(t)
-    plt.ylim(-1,1)
-    if SAVE == True:
-        plt.savefig(SDir+NAME+".svg")
-        plt.savefig(SDir+NAME+".jpg")
-        plt.show()
-        plt.close()
-    else:
-        plt.show()
-        plt.close()
+        #read in the data
+        x = pd.read_csv(DIR+file, index_col=0)['Voltage']
 
-def get_subdirectories(directory):
-    subdirectories = []
-    for name in os.listdir(directory):
-        path = os.path.join(directory, name)
-        if os.path.isdir(path):
-            subdirectories.append(path)
-    return subdirectories
+        #store the metadata
+        master.append(x)
+        NAME_L.append(name)
+        LABEL_L.append(label)
+        CONCENTRATION_L.append(concentration)
+        DATE_L.append(date)
+        TRIAL_L.append(trial)
+        WAVE_L.append(wave_number)
+
+    #place the data into a data frame and create collumns for meta data at end of row
+    master_df = pd.DataFrame(dict(zip(NAME_L, master)), index=[x for x in range(0, len(x))])
+    master_df = master_df.T
+    master_df['label'] = LABEL_L
+    master_df['concentration'] = CONCENTRATION_L
+    master_df['date'] = DATE_L
+    master_df['trial'] = TRIAL_L
+    master_df['wave_number'] = WAVE_L
+
+    return master_df
+
+
+
+
+
+
+
+
+
 
 
