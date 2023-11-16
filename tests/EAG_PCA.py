@@ -58,7 +58,7 @@ def EAG_PCA(DATA, SAVEDIR, CONC, ODORS, OA):
 
     # Store the principal components in a dataframe
     All_DF_PCA_DF = pd.DataFrame(data=All_DF_PCAResults, index=All_DF_Scaled.index)
-    for x, y in zip(range(100), range(1, 101)):
+    for x, y in zip(range(10), range(1, 11)):
         All_DF_PCA_DF.rename({x: f'PC {y}'}, axis=1, inplace=True)
     All_DF_PCA_DF = pd.concat([All_DF_PCA_DF,All_DF.iloc[:,-5:]], axis=1 )
 

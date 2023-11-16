@@ -37,14 +37,14 @@ def draw_confidence_ellipse(ax, data, n_std, label, color, marker):
     #ax.scatter(data[:, 0], data[:, 1], color=color, marker=marker, edgecolors='black', s=60, label=label)
 
 
-def Plot_PCA_Explained_Variance(DATADIR, ODENOTE, ODORS, CONC, TITLE, SAVE=True):
+def Plot_PCA_Explained_Variance(DATADIR, OA, ODORS, CONC, TITLE, SAVE=True):
     # set the data to be loaded and set a save location
-    Odenotation = ODENOTE
+    OdorAbreve = OA
     TITLE = TITLE
     DIR = f'{DATADIR}'
 
-    PCA_df = f'{DIR}/{Odenotation}_PCA.csv'
-    PCA_obj = f'{DIR}/{Odenotation}_PCA.pickle'
+    PCA_df = f'{DIR}/{OdorAbreve}_PCA.csv'
+    PCA_obj = f'{DIR}/{OdorAbreve}_PCA.pickle'
     SaveDir = f'{DIR}/'
 
 
@@ -54,22 +54,21 @@ def Plot_PCA_Explained_Variance(DATADIR, ODENOTE, ODORS, CONC, TITLE, SAVE=True)
         os.makedirs(SaveDir)
 
     # open the PCA_DF into a dataframe
-    data_df = pd.read_csv(PCA_df, index_col=0)
-    DF = data_df[data_df['concentration'].str.contains(CONC)]
+
     #print(DF)
-    PCA_DF = DF[DF['label'].str.contains(ODORS)]
+
     #print(PCA_DF['label'])
     # open the pickle file
     pca_obj = open(PCA_obj, 'rb')
     PCAobj = pickle.load(pca_obj)
     pca_obj.close()
 
-    text_x_pos = 0.4 * len(PCAobj.explained_variance_ratio_[:100])
+    text_x_pos = 0.4 * len(PCAobj.explained_variance_ratio_[:10])
     # For y-axis: set the position a bit (e.g., 5%) above the maximum value
-    text_y_pos = .4 * max(PCAobj.explained_variance_ratio_[:100])
+    text_y_pos = .4 * max(PCAobj.explained_variance_ratio_[:10])
 
     # Plot the explained variance
-    plt.scatter(range(100), PCAobj.explained_variance_ratio_[:100], color='brown')
+    plt.scatter(range(10), PCAobj.explained_variance_ratio_[:10], color='brown')
     plt.title('PCA Explained Variance')
     plt.ylabel('Explained Variance (%)')
     plt.xlabel('Principal Component')
@@ -78,8 +77,8 @@ def Plot_PCA_Explained_Variance(DATADIR, ODENOTE, ODORS, CONC, TITLE, SAVE=True)
     plt.text(text_x_pos, text_y_pos, f'Explained Variance of First 2 PC\'s:{round(sum(PCAobj.explained_variance_ratio_[:2]), 2)}')
 
     if SAVE == True:
-        plt.savefig(f'{SaveDir}{Odenotation}_ExplainedVariance.jpg')
-        plt.savefig(f'{SaveDir}{Odenotation}_ExplainedVariance.svg')
+        plt.savefig(f'{SaveDir}{OdorAbreve}_ExplainedVariance.jpg')
+        plt.savefig(f'{SaveDir}{OdorAbreve}_ExplainedVariance.svg')
     plt.show()
 
     # Plot Results
@@ -117,7 +116,7 @@ def Plot_2D_PCA(DATADIR, OA, ODORS, CONC, TITLE, Draw_Confidence_Ellipse = False
 
     # Create a dictionary mapping labels to colors
 
-    colors = plt.cm.Paired(np.linspace(0, 1, 8))
+    #colors = plt.cm.Paired(np.linspace(0, 1, 8))
 
     '''label_color_dict = {
         'healthy': [colors[0], 'o'],
@@ -184,7 +183,7 @@ def Plot_2D_PCA(DATADIR, OA, ODORS, CONC, TITLE, Draw_Confidence_Ellipse = False
 
 DATA_DIR='/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/' \
          'MOX_Manduca_EAG_Analysis/Data/Results/PCA/'
-Plot_2D_PCA(DATADIR=DATA_DIR, OA='HeathyArtCov1', ODORS='healthy|artcov', CONC='1k', Draw_Confidence_Ellipse=False, TITLE='', SAVE=True)
+Plot_2D_PCA(DATADIR=DATA_DIR, OA='HeathyArtCov1', ODORS='healthy|artcov', CONC='1k', Draw_Confidence_Ellipse=True, TITLE='', SAVE=True)
 
 
 

@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
-import csv
-import glob
-from scipy.signal import butter, lfilter
-from scipy import optimize
+
 
 #read in CSV and add column headers
 def Read_CSV_With_Col_Names(FilePath):
