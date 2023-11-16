@@ -23,10 +23,10 @@ def Extract_Waves(CSV):
     for i in range(0, ni):
         WAVES_DF = pd.DataFrame()
 
-        #extract half second prior to solenoid and 4 seconds after
-        #store in the the data frame
-        WAVES_DF['Voltage'] = TEMP[sol[i][0] - 5: sol[i][1] + 40].values
-        WAVES_DF['Solenoid'] = solenoid[sol[i][0] - 5: sol[i][1] + 40].values
+        #extract half second prior to solenoid activating and 4 seconds after solenoid activating
+        #this decision was made due to variable lengths of solenoid activation
+        WAVES_DF['Voltage'] = TEMP[sol[i][0] - 5: sol[i][0] + 40].values
+        WAVES_DF['Solenoid'] = solenoid[sol[i][0] - 5: sol[i][0] + 40].values
 
         #create a save location
         OUTPATH_DIR = os.path.join(RAW_DATA_OUTPATH, 'Extracted_Waves/')
