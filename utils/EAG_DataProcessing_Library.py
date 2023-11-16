@@ -7,6 +7,11 @@ import glob
 from scipy.signal import butter, lfilter
 from scipy import optimize
 
+def Read_CSV_With_Col_Names(FilePath):
+    column_names = ['Time', 'Voltage', 'Solenoid']
+    df = pd.read_csv(FilePath, header=None, names=column_names)
+    return df
+
 def find_sol(data):
     """
     This function takes an array of data, calculates the difference between consecutive 
