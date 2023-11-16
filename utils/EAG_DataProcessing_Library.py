@@ -97,7 +97,6 @@ def Extract_Waves(CSV):
         #save every extracted wave from the original file as its own CSV
         WAVES_DF.to_csv(OUTPATH_DIR+OUTFILE_NAME)
 
-
 def name_con(f):
     # This will splits the basename of the file on "_" to find the concentration in the file name
     #'dateMoth#SexAntenna#_line_deliverymethod_odor_trial' 062623M1fA1_OR6KO_p_linalool_1
