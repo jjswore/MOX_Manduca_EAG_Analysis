@@ -8,7 +8,7 @@ import pandas as pd
     # first we load the data into our variable abf
     # open a csv file containing a EAG wave
 
-def Extract_Waves(CSV, SAVE=True):
+def Extract_Waves(CSV):
     BASENAME = os.path.basename(CSV)
     DF = Read_CSV_With_Col_Names(CSV)
     solenoid = DF['Solenoid']
@@ -38,4 +38,6 @@ def Extract_Waves(CSV, SAVE=True):
             OUTFILE_NAME = f'{OUTFILE_NAME}_wave{i}.csv'
             print(OUTFILE_NAME)
         #save every extracted wave from the original file as its own CSV
-        WAVES_DF.to_csv(f'{OUTPATH_DIR}{BASENAME}wave_{i}.csv')
+        WAVES_DF.to_csv(OUTFILE_NAME)
+
+Extract_Waves(TEST_CSV)
