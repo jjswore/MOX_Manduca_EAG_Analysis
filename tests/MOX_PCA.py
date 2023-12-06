@@ -5,7 +5,7 @@ import pickle
 import os
 
 
-def MOX_PCA(DATA, SAVEDIR, CONC, ODORS, OA):
+def MOX_PCA(DATA, SAVEDIR, CONC, DUR, ODORS, OA):
     concentration = CONC
     odors = ODORS
     OdorAbreve = OA
@@ -14,11 +14,12 @@ def MOX_PCA(DATA, SAVEDIR, CONC, ODORS, OA):
 
     if not os.path.exists(SaveDir):
         os.makedirs(SaveDir)
-
+    global DF
+    global All_DF
     if isinstance(data, str):
         # Additional check to see if it ends with '.csv' if needed
         if data.endswith('.csv'):
-            DF = pd.read_csv(data, index_col=0)
+            DF = pd.read_csv(data, index_col=0,dtype={'concentration': 'string', 'duration':'string'})
         else:
             print("String provided is not a path to a CSV file.")
             return
@@ -30,10 +31,12 @@ def MOX_PCA(DATA, SAVEDIR, CONC, ODORS, OA):
     else:
         print("Unsupported data format.")
         return
-
+    global DF2
     # load our data frame into the program
-    All_DF = DF[DF['concentration'].str.contains(concentration)]
-    All_DF = All_DF[All_DF['label'].str.contains(odors)]
+    # ?!\d captures exact matches so you only match 1 not 10.
+    DF2 = DF[DF['concentration'].str.contains(f'(?<!\d){concentration}(?!\d)')]
+    All_DF = DF2[DF2['duration'].str.contains(f'(?<!\d){DUR}(?!\d)')]
+    All_DF = All_DF[All_DF['label'].str.contains(f'(?<!\d){odors}(?!\d)')]
 
     # convert the data frame into a usable format for scaling
     # leave out the metadata columns
@@ -67,7 +70,7 @@ def MOX_PCA(DATA, SAVEDIR, CONC, ODORS, OA):
 
     return All_DF_PCA_DF, PCA_set
 
-DATA_FILE='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/DataFrames/All.csv'
+DATA_FILE='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/DataFrames/MOX/All.csv'
 SAVE_DIR='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/Results/MOX/'
 
-PCA_DF, PCA_OBJ = MOX_PCA(DATA=DATA_FILE, SAVEDIR=SAVE_DIR, CONC='1k', ODORS='healthy|artcov', OA='HeathyArtCov1')
+PCA_DF, PCA_OBJ = MOX_PCA(DATA=DATA_FILE, SAVEDIR=SAVE_DIR, CONC='1k', ODORS='healthy|artcov', DUR='1|5', OA='HeathyArtCov1')
