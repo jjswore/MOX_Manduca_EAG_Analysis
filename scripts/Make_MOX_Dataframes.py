@@ -1,7 +1,7 @@
 from utils.EAG_DataProcessing_Library import *
-DATA_DIR='/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/MOX_Manduca_EAG_Analysis/Data/Extracted_Waves/MOX/'
+DATA_DIR='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/Extracted_Waves/MOX/'
 
-SAVE_DIR = '/Users/joshswore/analysis_python_code/EAG_and_VOC_Project/MOX_Manduca_EAG_Analysis/Data/DataFrames/MOX/'
+SAVE_DIR = '/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/DataFrames/MOX/'
 
 df = MOX_DF_BUILD(DATA_DIR)
 

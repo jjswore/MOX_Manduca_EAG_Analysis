@@ -45,6 +45,60 @@ def TT_Split(DF, t=.75):
             TestDF.drop(['label', 'date', 'concentration'], axis=1),
             TrainL, TestL)
 
+def TT_Split_MOX(DF):
+    # TODO OVERLAPPING DATES, NEED TO ADD ADDITIONAL CHECK FOR ODOR TYPE
+    # todo add odors arg to only provide training/testing data for specified odors/durations
+    """
+    Splits the DataFrame into training and testing sets based on unique dates.
+    Testing set includes one day of data for each odor, and the rest are used for training.
+
+    Args:
+        DF (pandas.DataFrame): The DataFrame to split.
+
+    Returns:
+        tuple: Four DataFrames - train features, test features, train labels, test labels.
+    """
+    # list of shortened dates for each odor
+    odor_dates = {'floral,1k':['041823','072823','081823'],
+                  'healthy,1k':['070623','072123','080223'],
+                  'healthy,100k':['070723','071423'],
+                  'artcov,1k':['071923','072623','080223','081623'],
+                  'linalool,1k':['072823','080423','081123']}
+
+    TrainDF = pd.DataFrame()
+    TestDF = pd.DataFrame()
+    # pulls out a single trial date for each odor for testing, remainder for training
+    for odor_item, date_list in odor_dates:
+        odorx, concx = odor_item.split(',')
+        rand_date = date_list[random.randrange(1,len(date_list))] #select rand date from list
+
+        DF_sub = DF[DF['label'].str.contains(f'(?<!\d){odorx}(?!\d)')]
+        DF_sub = DF_sub[DF_sub['concentration'].str.contains(f'(?<!\d){concx}(?!\d)')]
+        Train_DF_sub = DF_sub[DF_sub['date'].str.contains(f'(?<!\d){rand_date}(?!\d)')]
+        Test_DF_sub = DF_sub[DF_sub['date'].str.contains(f'(?<!\d){rand_date}(?!\d)') == False]
+
+        # append data to train or test dataframe
+        if(len(TrainDF) == 0):
+            TrainDF = Train_DF_sub
+            TestDF = Test_DF_sub
+        else:
+            TrainDF = pd.concat([TrainDF, Train_DF_sub])
+            TestDF = pd.concat([TestDF, Test_DF_sub])
+
+
+    # Extract labels (aka odor type) from the DataFrames by placing into new data frames
+    TrainL = TrainDF['label']
+    TestL = TestDF['label']
+
+    print(f'total length: {len(DF)}')
+    print(f'train length: {len(TrainDF)}')
+    print(f'test length: {len(TestDF)}')
+
+    # Return features and labels, dropping unnecessary columns
+    return (TrainDF.drop(['label', 'date', 'concentration', 'duration'], axis=1),
+            TestDF.drop(['label', 'date', 'concentration', 'duration'], axis=1),
+            TrainL, TestL)
+
 
 def RFC_GridSearch(data):
 

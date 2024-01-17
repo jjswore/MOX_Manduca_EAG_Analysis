@@ -25,6 +25,7 @@ def Extract_Waves(CSV):
 
         #extract half second prior to solenoid activating and 4 seconds after solenoid activating
         #this decision was made due to variable lengths of solenoid activation
+        #TODO: update values probably ~60*4 data points for 4 seconds
         WAVES_DF['Voltage'] = TEMP[sol[i][0] - 5: sol[i][0] + 40].values
         WAVES_DF['Solenoid'] = solenoid[sol[i][0] - 5: sol[i][0] + 40].values
 

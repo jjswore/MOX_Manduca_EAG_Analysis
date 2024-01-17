@@ -70,7 +70,7 @@ def MOX_PCA(DATA, SAVEDIR, CONC, DUR, ODORS, OA):
 
     return All_DF_PCA_DF, PCA_set
 
-DATA_FILE='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/DataFrames/All.csv'
+DATA_FILE='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/DataFrames/MOX/All.csv'
 SAVE_DIR='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/Results/MOX/'
 
-PCA_DF, PCA_OBJ = MOX_PCA(DATA=DATA_FILE, SAVEDIR=SAVE_DIR, CONC='1k|100k', ODORS='floral|linalool|healthy|artcov', DUR='02|1|5|10', OA='All')
+PCA_DF, PCA_OBJ = MOX_PCA(DATA=DATA_FILE, SAVEDIR=SAVE_DIR, CONC='1k|100k', ODORS='floral|linalool|healthy|artcov', DUR='02|1|5|10', OA='All2')

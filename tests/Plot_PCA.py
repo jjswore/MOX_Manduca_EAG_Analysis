@@ -184,7 +184,7 @@ def Plot_2D_PCA(DATADIR, OA, ODORS, CONC, TITLE, Draw_Confidence_Ellipse = False
     plt.show()
 
 DATA_DIR='/Users/User/PycharmProjects/MOX_Manduca_EAG_Analysis/Data/Results/MOX/PCA'
-Plot_2D_PCA(DATADIR=DATA_DIR, OA='All', ODORS='artcov|healthy|floral|linalool', CONC='1k|100k', Draw_Confidence_Ellipse=True, TITLE='', SAVE=True)
+Plot_2D_PCA(DATADIR=DATA_DIR, OA='All2', ODORS='artcov|healthy|floral|linalool', CONC='1k|100k', Draw_Confidence_Ellipse=True, TITLE='', SAVE=True)
 
 
 
