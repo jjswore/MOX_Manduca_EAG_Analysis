@@ -4,7 +4,7 @@ import numpy as np
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
-from sklearn.model_selection import HalvingGridSearchCV
+#from sklearn.model_selection import HalvingGridSearchCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import confusion_matrix
@@ -46,7 +46,6 @@ def TT_Split(DF, t=.75):
             TrainL, TestL)
 
 def TT_Split_MOX(DF):
-    # TODO OVERLAPPING DATES, NEED TO ADD ADDITIONAL CHECK FOR ODOR TYPE
     # todo add odors arg to only provide training/testing data for specified odors/durations
     """
     Splits the DataFrame into training and testing sets based on unique dates.
@@ -68,14 +67,21 @@ def TT_Split_MOX(DF):
     TrainDF = pd.DataFrame()
     TestDF = pd.DataFrame()
     # pulls out a single trial date for each odor for testing, remainder for training
-    for odor_item, date_list in odor_dates:
+    for odor_item, date_list in odor_dates.items():
         odorx, concx = odor_item.split(',')
+        #print(f'odorx={odorx}')
+        #print(f'concx={concx}')
         rand_date = date_list[random.randrange(1,len(date_list))] #select rand date from list
+        #print(f'rand_date={rand_date}')
 
         DF_sub = DF[DF['label'].str.contains(f'(?<!\d){odorx}(?!\d)')]
+        #print(f'length after singling odor={len(DF_sub)}')
         DF_sub = DF_sub[DF_sub['concentration'].str.contains(f'(?<!\d){concx}(?!\d)')]
-        Train_DF_sub = DF_sub[DF_sub['date'].str.contains(f'(?<!\d){rand_date}(?!\d)')]
-        Test_DF_sub = DF_sub[DF_sub['date'].str.contains(f'(?<!\d){rand_date}(?!\d)') == False]
+        #print(f'length after singling conc={len(DF_sub)}')
+        Test_DF_sub = DF_sub[DF_sub['date'].str.contains(rand_date)]
+        Train_DF_sub = pd.concat([DF_sub, Test_DF_sub, Test_DF_sub]).drop_duplicates(keep=False)
+        #print(f'length after singling date, train={len(Train_DF_sub)}')
+        #print(f'length after singling date, test={len(Test_DF_sub)}')
 
         # append data to train or test dataframe
         if(len(TrainDF) == 0):
@@ -90,13 +96,12 @@ def TT_Split_MOX(DF):
     TrainL = TrainDF['label']
     TestL = TestDF['label']
 
-    print(f'total length: {len(DF)}')
-    print(f'train length: {len(TrainDF)}')
-    print(f'test length: {len(TestDF)}')
+    # check to see if lengths match expected
+    print(f'total, train, test lengths: {len(DF)}, {len(TrainDF)}, {len(TestDF)}')
 
     # Return features and labels, dropping unnecessary columns
-    return (TrainDF.drop(['label', 'date', 'concentration', 'duration'], axis=1),
-            TestDF.drop(['label', 'date', 'concentration', 'duration'], axis=1),
+    return (TrainDF.drop(['label','concentration','date','trial','duration','wave_number'], axis=1),
+            TestDF.drop(['label','concentration','date','trial','duration','wave_number'], axis=1),
             TrainL, TestL)
 
 
@@ -105,7 +110,8 @@ def RFC_GridSearch(data):
     data_df = pd.concat(data, axis=1)
     # Split data into train and test sets
     print('Splitting data...')
-    train_features, test_features, train_labels, test_labels = TT_Split(data_df, .70)
+    train_features, test_features, train_labels, test_labels = TT_Split_MOX(data_df) #, .70)
+    print('(train_labels.shape, train_features.shape, test_labels.shape, test_features.shape):')
     print(train_labels.shape, train_features.shape, test_labels.shape, test_features.shape)
 
     n_estimators = [10]
@@ -132,7 +138,8 @@ def RFC_GridSearch(data):
 
     #acc_scorer = make_scorer(accuracy_score)
     print("beginning grid search")
-    GRID_cv = HalvingGridSearchCV(RandomForestClassifier(),  param_grid, scoring='accuracy', cv=5, n_jobs=7, min_resources=14, error_score='raise', verbose=1)
+    #GRID_cv = HalvingGridSearchCV(RandomForestClassifier(),  param_grid, scoring='accuracy', cv=5, n_jobs=7, min_resources=14, error_score='raise', verbose=1)
+    GRID_cv = GridSearchCV(RandomForestClassifier(),  param_grid, scoring='accuracy', cv=5, n_jobs=7, error_score='raise', verbose=1)
     GRID_cv.fit(train_features, train_labels)
     gbp=GRID_cv.best_params_
     gbs=GRID_cv.best_score_
@@ -177,11 +184,11 @@ def RF_Testing(data, concentration, odors, classifier, P):
 
     # Split the data into training and testing sets
     print('splitting data')
-    train_features, test_features, train_labels, test_labels = TT_Split(data_df, .7)
+    train_features, test_features, train_labels, test_labels = TT_Split_MOX(data_df)#, .7)
 
-    print(classifier.get_params(deep=True))
+    print(f'classifier params: {classifier.get_params(deep=True)}')
     params = classifier.get_params()
-    params['n_estimators'] = 1000
+    params['n_estimators'] = 100 #1000
     classifier = RandomForestClassifier(**params)
     # Train the model on training data
     classifier.fit(train_features, train_labels)
@@ -209,7 +216,7 @@ def RF_Testing(data, concentration, odors, classifier, P):
                     'log_probabilities': logprob}
     return results_dict
 
-def SVM_GridSearch(data):
+def SVM_GridSearch(data, concentration, odors):
     """
     Perform a grid search to optimize SVM hyperparameters.
 
@@ -234,14 +241,17 @@ def SVM_GridSearch(data):
     data_df = pd.concat(data, axis=1)
     # Split data into train and test sets
     print('Splitting data...')
-    train_features, test_features, train_labels, test_labels = TT_Split(data_df, .75)
+    # train_features, test_features, train_labels, test_labels = TT_Split(data_df, .75)
+    train_features, test_features, train_labels, test_labels = TT_Split_MOX(data_df)
+    print('(train_labels.shape, train_features.shape, test_labels.shape, test_features.shape):')
     print(train_labels.shape, train_features.shape, test_labels.shape, test_features.shape)
 
     # Set hyperparameters to search over
     kernel = ['rbf']
-    C = [0.5, 1, 4, 5, 7, 7.5, 8, 9, 10, 12.5, 15, 17.5, 20, 22.5, 25, 30, 40]
-    degree = [0, 0.01, 0.05, 0.1, 0.5]
-    gamma = ['scale', 'auto', 0.1, 0.2, 0.5]
+    C = [30, 40, 60, 70, 80, 85, 90, 95, 100]
+    #degree = [0, 0.01, 0.05, 0.1, 0.5]
+    degree = [0,1,2,3,4]
+    gamma = ['scale', 'auto', 1, 1.3, 1.5, 1.7, 2] #['scale', 'auto', 0.1, 0.5]
     coef0 = [0, 0.05, 0.1, 0.2]
 
     # Create parameter grid
@@ -313,7 +323,8 @@ def SVM_Testing(data, concentration, odors, classifier, P):
 
     # Split the dataset into training and testing sets
     print('Splitting data...')
-    train_features, test_features, train_labels, test_labels = TT_Split(data_df, .70)
+    # train_features, test_features, train_labels, test_labels = TT_Split(data_df, .70)
+    train_features, test_features, train_labels, test_labels = TT_Split_MOX(data_df)
 
     # Train the classifier
     print('Training model...')
@@ -365,7 +376,7 @@ def RF_Model_Test(concentrations, data, odor, PosL, repeats):
     results = []
     for conc in [concentrations]:
         print(f"Beginning analysis for {odor} at {conc} concentration")
-        classifier, params, best_score = RFC_GridSearch(data=data, concentration=conc, odors=odor)
+        classifier, params, best_score = RFC_GridSearch(data=data) #, concentration=conc, odors=odor)
         print(f"Best classifier for {odor} at {conc} concentration is {classifier}")
         print(f"Building Random Forest for {odor} at {conc} concentration")
         results.append([RF_Testing(data=data, classifier=classifier, concentration=conc, odors=odor, P=PosL)
